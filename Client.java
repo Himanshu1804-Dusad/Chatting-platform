@@ -7,19 +7,21 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.Socket;
 import java.util.*;
 import java.text.*;
-import java.net.*;
 
-public class Server implements ActionListener {
+public class Client extends JFrame implements ActionListener {
     
     JTextField text;
-    JPanel a1;
+    static JPanel a1;
     static Box vertical = Box.createVerticalBox();
     static JFrame f = new JFrame();
+    
     static DataOutputStream dout;
 
-    Server() {
+
+    Client() {
         
         f.setLayout(null);
         
@@ -70,7 +72,7 @@ public class Server implements ActionListener {
         morevert.setBounds(420, 20, 10, 25);
         p1.add(morevert);
         
-        JLabel name = new JLabel("Jon Snow");
+        JLabel name = new JLabel("Arshiee");
         name.setBounds(110, 15, 100, 25);
         name.setForeground(Color.WHITE);
         name.setFont(new Font("SAN_SERIF", Font.BOLD, 20));
@@ -101,7 +103,7 @@ public class Server implements ActionListener {
         
         
         f.setSize(465, 700);
-        f.setLocation(200, 50);
+        f.setLocation(800, 50);
         f.setUndecorated(true);
         f.getContentPane().setBackground(Color.WHITE);
         
@@ -110,6 +112,7 @@ public class Server implements ActionListener {
     }
     
     public void actionPerformed(ActionEvent ae) {
+
         try {
             String out = text.getText();
 
@@ -128,15 +131,12 @@ public class Server implements ActionListener {
 
             text.setText("");
 
-            f.repaint();
-            f.invalidate();
-            f.validate();
-
+            repaint();
+            invalidate();
+            validate();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        
     }
 
     public static JPanel formatLabel(String out) {
@@ -162,26 +162,27 @@ public class Server implements ActionListener {
         return panel;
     }
     public static void main(String[] args) {
-        new Server();
+        new Client();
 
         try {
-            ServerSocket skt = new ServerSocket(6001);
+            Socket s = new Socket("127.0.0.1", 6001);
+            DataInputStream din = new DataInputStream(s.getInputStream());
+            dout = new DataOutputStream(s.getOutputStream());
+            
             while(true) {
-                Socket s = skt.accept();
-                DataInputStream din = new DataInputStream(s.getInputStream());
-                dout = new DataOutputStream(s.getOutputStream());
-                
-                while(true) {
-                    String msg = din.readUTF();
-                    JPanel panel = formatLabel(msg);
-                    
-                    JPanel left = new JPanel(new BorderLayout());
-                    left.add(panel, BorderLayout.LINE_START);
-                    vertical.add(left);
-                    f.validate();
-                }
-            }
+                a1.setLayout(new BorderLayout());
+                String msg = din.readUTF();
+                JPanel panel = formatLabel(msg);
 
+                JPanel left = new JPanel(new BorderLayout());
+                left.add(panel, BorderLayout.LINE_START);
+                vertical.add(left);
+                
+                vertical.add(Box.createVerticalStrut(15));
+                a1.add(vertical, BorderLayout.PAGE_START);
+                
+                f.validate();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
